@@ -1,0 +1,31 @@
+{
+  "name": "Adaptive Multi-Drone Mission Command",
+  "short_name": "DroneMission",
+  "description": "Autonomous Search Space Discretization, LiDAR Mapping & Hybrid GA-PSO Optimizer",
+  "start_url": "/",
+  "id": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "landscape-primary",
+  "background_color": "#020617",
+  "theme_color": "#0f172a",
+  "categories": ["navigation", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Live Mission Control",
+      "short_name": "Mission",
+      "description": "Open live UAV fleet dashboard",
+      "url": "/",
+      "icons": [{ "src": "/icon.svg", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": []
+}

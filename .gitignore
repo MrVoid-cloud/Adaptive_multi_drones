@@ -1,0 +1,68 @@
+# Environment variables & Sensitive Credentials (CRITICAL - PREVENTS API KEY LEAKS)
+.env
+.env.local
+.env.*.local
+*.env
+frontend/.env
+
+# Whitelist safe configuration template
+!.env.example
+!frontend/.env.example
+
+# Node.js & Webpack/Vite
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+.npm/
+*.tsbuildinfo
+
+# Python & Virtual Environments
+__pycache__/
+*/__pycache__/
+*/*/__pycache__/
+*/*/*/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+ENV/
+build/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Operating System & IDEs
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.bak
+*.tmp
+
+# Logs
+*.log
+logs/

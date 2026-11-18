@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مخططات UML الهندسية - نظام التخطيط التكيفي لأسطول الدرونات</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #0f172a;
+      --border: #1e293b;
+      --accent: #10b981;
+      --cyan: #06b6d4;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Cairo', sans-serif;
+      padding: 24px;
+      line-height: 1.6;
+    }
+    header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 800;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    p.sub {
+      color: var(--text-muted);
+      font-size: 13px;
+      margin-top: 6px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .nav-tabs {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      background: #1e293b;
+      color: #cbd5e1;
+      border: 1px solid #334155;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover, .tab-btn.active {
+      background: #059669;
+      color: #ffffff;
+      border-color: #10b981;
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+    }
+    .section-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    .section-card h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #a78bfa;
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .section-card p.desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+    .diagram-container {
+      background: #020617;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 20px;
+      overflow-x: auto;
+      display: flex;
+      justify-content: center;
+    }
+    .mermaid {
+      width: 100%;
+      text-align: center;
+    }
+  </style>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        darkMode: true,
+        background: '#020617',
+        primaryColor: '#1e293b',
+        primaryBorderColor: '#06b6d4',
+        primaryTextColor: '#f8fafc',
+        lineColor: '#38bdf8',
+        secondaryColor: '#0f172a',
+        tertiaryColor: '#1e1b4b'
+      }
+    });
+
+    function scrollToSection(id) {
+      document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+  </script>
+</head>
+<body>
+
+  <header>
+    <h1>🚁 نظام التخطيط الجغرافي التكيفي متعدد الطائرات المسيرة</h1>
+    <p class="sub">Adaptive Multi-Drone Search & Terrain Mapping System &bull; UML Architectural Diagrams</p>
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="scrollToSection('sec-components')">1. مخطط المكونات والحزم</button>
+      <button class="tab-btn" onclick="scrollToSection('sec-classes')">2. مخطط الفئات (Class Diagram)</button>
+      <button class="tab-btn" onclick="scrollToSection('sec-sequence')">3. مخطط التتابع (Sequence Diagram)</button>
+      <button class="tab-btn" onclick="scrollToSection('sec-state')">4. مخطط آلة الحالات (State Machine)</button>
+      <button class="tab-btn" onclick="scrollToSection('sec-activity')">5. مخطط تدفق العمليات (Data Flow)</button>
+    </div>
+  </header>
+
+  <!-- 1. Component & Package Diagram -->
+  <div id="sec-components" class="section-card">
+    <h2>1. مخطط المكونات وحزم النظام البرمجية (Component & Package Architecture)</h2>
+    <p class="desc">يوضح التوزيع الطبقي للنظام من واجهة المستخدم (React) عبر بوابات الـ API والـ WebSockets وصولاً لمحركات GIS والتحسين والمحاكاة الفيزيائية.</p>
+    <div class="diagram-container">
+      <div class="mermaid">
+flowchart TD
+    subgraph Presentation_Layer["طبقة العرض والتحكم (React + Vite + Canvas)"]
+        UI_Dash["MissionControlDashboard"]
+        UI_Map["MultiLayerMissionMap (2D Canvas)"]
+        UI_Panel["AlgorithmSegmentedPanel"]
+        UI_Modal["BenchmarkComparisonModal"]
+        UI_Socket["useTelemetrySocket Hook"]
+    end
+
+    subgraph Gateway_Layer["طبقة البوابة والاتصال (FastAPI Gateway)"]
+        API_Grid["Grid Router (/api/v1/grid)"]
+        API_Opt["Optimize Router (/api/v1/optimize)"]
+        API_Sim["Simulation Router (/api/v1/sim)"]
+        WS_Hub["TelemetryConnectionManager (/ws/telemetry)"]
+        Session_Mgr["MissionState (UUID Session Lock)"]
+    end
+
+    subgraph GIS_Engine["محرك المعلومات الجغرافية (Computational GIS)"]
+        OSM_Ext["RoadTopologyExtractor (OSM Overpass)"]
+        Geo_Grid["GeodesicGridDiscretizer (55m Swath)"]
+        Hybrid_Builder["HybridGraphGridBuilder (Zero-Overlap Buffer)"]
+    end
+
+    subgraph Optimization_Engine["محرك التحسين التوافقي (Optimization Suite)"]
+        Evaluator["MultiObjectiveFitnessEvaluator"]
+        RL_Ctrl["OnlineRLParameterController (Q-Learning)"]
+        Engine_PSO["DiscretePSOOptimizer"]
+        Engine_GA["ModifiedGAOptimizer"]
+        Engine_Hybrid["HybridGAPSOOptimizer"]
+        Tri_Orch["TriAlgorithmOrchestrator"]
+    end
+
+    subgraph Physics_Simulation["محرك المحاكاة الفيزيائية اللحظية (Physics Kernel)"]
+        Sim_Engine["MultiDronePhysicsSimulator (12Hz Loop)"]
+        Fleet_Reg["FleetRegistry"]
+        Battery_Swap["Multi-Sortie Breakpoint Engine"]
+        Opportunistic["Opportunistic In-Flight Scanner"]
+    end
+
+    UI_Dash --> UI_Map & UI_Panel & UI_Modal & UI_Socket
+    UI_Map -->|POST /hybrid-generate| API_Grid
+    UI_Panel -->|POST /optimize/compare| API_Opt
+    UI_Panel -->|POST /sim/deploy-and-start| API_Sim
+    UI_Socket <-->|WebSocket Stream 12Hz| WS_Hub
+
+    API_Grid --> Session_Mgr & OSM_Ext & Geo_Grid & Hybrid_Builder
+    API_Opt --> Session_Mgr & Tri_Orch
+    Tri_Orch --> Evaluator & Engine_PSO & Engine_GA & Engine_Hybrid
+    Engine_Hybrid --> RL_Ctrl
+
+    API_Sim --> Session_Mgr & Sim_Engine
+    Sim_Engine --> Fleet_Reg & Battery_Swap & Opportunistic
+    Sim_Engine -.->|Telemetry Frames| WS_Hub
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Comprehensive Class Diagram -->
+  <div id="sec-classes" class="section-card">
+    <h2>2. مخطط الفئات الهيكلي الشامل (Comprehensive Class Diagram)</h2>
+    <p class="desc">يوضح فئات النظام، سماتها، دوالها، ونوعيات العلاقات التركيبية والوراثية بين الحزم الأساسية.</p>
+    <div class="diagram-container">
+      <div class="mermaid">
+classDiagram
+    class GridCell {
+        +int cell_id
+        +int row
+        +int col
+        +float center_lat
+        +float center_lon
+        +List~Tuple~ corners
+        +float area_m2
+        +float elevation_m
+        +float terrain_roughness
+        +bool is_masked_out
+        +bool is_scanned
+        +to_geojson_feature() Dict
+    }
+
+    class GeodesicGridDiscretizer {
+        +float lat_min
+        +float lat_max
+        +float lon_min
+        +float lon_max
+        +float cell_size_m
+        +List~GridCell~ cells
+        +build_grid() void
+    }
+
+    class RoadIntersectionNode {
+        +str node_id
+        +float lat
+        +float lon
+        +int degree
+        +int cluster_size
+    }
+
+    class RoadEdge {
+        +str edge_id
+        +str u
+        +str v
+        +float length_m
+        +str highway_type
+    }
+
+    class ExtractedRoadNetwork {
+        +Dict~str, RoadIntersectionNode~ nodes
+        +List~RoadEdge~ edges
+        +str source
+    }
+
+    class HybridGraphGridBuilder {
+        +GeodesicGridDiscretizer grid
+        +ExtractedRoadNetwork road_network
+        +float buffer_radius_m
+        +List~UnifiedTarget~ unified_targets
+        +build_hybrid_space() void
+        +to_dual_layer_geojson() Dict
+    }
+
+    class MultiObjectiveFitnessEvaluator {
+        +List~UnifiedTarget~ active_targets
+        +List~DroneTelemetry~ fleet
+        +int n_drones
+        +int m_cells
+        +evaluate(chromosome) Tuple
+        +calculate_sorties(route) Tuple
+    }
+
+    class OnlineRLParameterController {
+        +ndarray Q_table
+        +int current_state
+        +observe_state(population, diversity) int
+        +select_action(state) int
+        +update_q(state, action, reward, next_state) void
+    }
+
+    class HybridGAPSOOptimizer {
+        +MultiObjectiveFitnessEvaluator evaluator
+        +OnlineRLParameterController rl_controller
+        +int pop_swarm_size
+        +int generations
+        +optimize() Dict
+        -_apply_2opt_untangle(route) List
+        -_rebalance_sorties_memetic(routes) Dict
+    }
+
+    class MultiDronePhysicsSimulator {
+        +str state
+        +float time_scale
+        +Tuple home_base
+        +Dict routes
+        +Dict drone_states
+        +load_mission_routes(algo, routes, fleet, base) void
+        +start() void
+        +stop_and_reset() void
+        +hard_reset() void
+    }
+
+    class MissionState {
+        +str mission_id
+        +float created_at
+        +start_new_mission(bounds, vertices, base) str
+        +hard_reset() void
+    }
+
+    GeodesicGridDiscretizer *-- GridCell
+    ExtractedRoadNetwork *-- RoadIntersectionNode
+    ExtractedRoadNetwork *-- RoadEdge
+    HybridGraphGridBuilder o-- GeodesicGridDiscretizer
+    HybridGraphGridBuilder o-- ExtractedRoadNetwork
+    MultiObjectiveFitnessEvaluator o-- HybridGraphGridBuilder
+    HybridGAPSOOptimizer *-- OnlineRLParameterController
+    HybridGAPSOOptimizer o-- MultiObjectiveFitnessEvaluator
+    MultiDronePhysicsSimulator o-- MissionState
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Sequence Diagram -->
+  <div id="sec-sequence" class="section-card">
+    <h2>3. مخطط التتابع لدورة حياة المهمة (End-to-End Mission Sequence Diagram)</h2>
+    <p class="desc">يوضح التتابع الزمني الكامل بدءاً من رسم المضلع بالماوس، وصولاً لتوليد الفضاء الهجين، والتحسين الثلاثي، وإطلاق المحاكاة الفيزيائية.</p>
+    <div class="diagram-container">
+      <div class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Operator as المشغل (Operator / UI)
+    participant Map as MultiLayerMissionMap
+    participant Dash as MissionControlDashboard
+    participant API_Grid as FastAPI /grid
+    participant MissionState as MissionState
+    participant GIS as HybridGraphGridBuilder
+    participant API_Opt as FastAPI /optimize
+    participant Orch as TriAlgorithmOrchestrator
+    participant RL as OnlineRLController
+    participant API_Sim as FastAPI /sim
+    participant Sim as MultiDronePhysicsSimulator
+    participant WS as TelemetryConnectionManager
+
+    Operator->>Map: رسم مضلع حر بالماوس (Freehand ROI)
+    Map->>Dash: تفريغ الحالة السابقة (onROIStartDrawing)
+    Map->>API_Grid: POST /api/v1/grid/hybrid-generate (ROI Polygon)
+    API_Grid->>MissionState: hard_reset() & start_new_mission()
+    MissionState->>Sim: hard_reset() [تصفير المحاكاة]
+    MissionState->>WS: بث MISSION_CLEARED
+    API_Grid->>GIS: استخراج عقد الشوارع (OSM) وتوليد خلايا 55m
+    GIS-->>API_Grid: UnifiedTargets + Dual-Layer GeoJSON
+    API_Grid-->>Map: رد 201 Created (Features + New Session UUID)
+    Map->>Map: رسم عقد الطرق والخلايا المفتوحة فوراً
+    Map->>Dash: onROISubmitted(hybridData)
+
+    Dash->>API_Opt: POST /api/v1/optimize/compare (FleetSize, Session UUID)
+    API_Opt->>MissionState: التحقق من قفل الجلسة (Epoch Validation)
+    API_Opt->>Orch: run_benchmark()
+    
+    par تشغيل الخوارزميات الثلاث
+        Orch->>Orch: Discrete PSO (استكشاف السرب)
+    and
+        Orch->>Orch: Modified GA (النخبة والتقاطع)
+    and
+        Orch->>RL: قياس الإنتروبيا واختيار الإجراء (Action)
+        RL-->>Orch: معاملات متكيفة (w, c1, c2, p_mut)
+        Orch->>Orch: Hybrid GA-PSO + صقل 2-Opt وجدولة الجولات (Sorties)
+    end
+
+    Orch-->>API_Opt: نتائج المقارنة الشاملة ومصفوفة التحليل
+    API_Opt-->>Dash: رد 200 OK
+    Dash->>Map: حقن مسارات الخوارزمية المختارة (خطوط متصلة ومنقطة للقاعدة)
+
+    Operator->>Dash: النقر على "اعتماد وإطلاق مع HYBRID"
+    Dash->>API_Sim: POST /api/v1/sim/deploy-and-start
+    API_Sim->>Sim: load_mission_routes() & start()
+    Sim->>Sim: تهيئة الأسطول عند القاعدة المشتركة (Shared Home Base)
+    API_Sim-->>Dash: رد 200 OK (انطلاق المحاكاة)
+
+    loop حلقة المحاكاة الفيزيائية (12Hz Physics Loop)
+        Sim->>Sim: حساب الحركة واستهلاك البطارية
+        Sim->>Sim: مسح انتهازي للأهداف أثناء المرور
+        alt انخفاض طاقة البطارية
+            Sim->>Sim: العودة للقاعدة (RETURNING_FOR_SWAP)
+            Sim->>Sim: استبدال البطارية مع عد تنازلي (120s SWAP)
+            Sim->>Sim: استئناف الجولة (RELAUNCHING_SORTIE)
+        end
+        Sim->>WS: بث إطار التيليميتري اللحظي (TELEMETRY_TICK)
+        WS-->>Dash: بث البيانات وتحديث مواقع الدرونات على الخريطة
+    end
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. State Machine Diagram -->
+  <div id="sec-state" class="section-card">
+    <h2>4. مخطط آلة الحالات للدرون وحركة الجولات المتعددة (Drone State Machine)</h2>
+    <p class="desc">يوضح الحالات الفيزيائية المختلفة للطائرة المسيرة من الجاهزية إلى الطيران والعودة التلقائية لاستبدال البطارية واستئناف المهمة.</p>
+    <div class="diagram-container">
+      <div class="mermaid">
+stateDiagram-v2
+    [*] --> READY: إلحاق الدرون بالأسطول عند القاعدة المشتركة (HOME)
+
+    READY --> SORTIE_FLYING: اعتماد المسار وبدء أول جولة (Sortie #1)
+    
+    state SORTIE_FLYING {
+        [*] --> NavigatingWaypoints: طيران ومسح عقد الطرق والخلايا
+        NavigatingWaypoints --> OpportunisticScan: مرور قرب هدف مجاور (< 28m)
+        OpportunisticScan --> NavigatingWaypoints: تعليم الهدف كممسوح
+    }
+
+    SORTIE_FLYING --> RETURNING_FOR_SWAP: وصول شحنة البطارية لحد الأمان
+    SORTIE_FLYING --> MISSION_COMPLETED: إتمام مسح جميع النقاط المخصصة
+
+    state RETURNING_FOR_SWAP {
+        [*] --> RTLLeg: العودة للقاعدة عبر المسار المنقط
+        RTLLeg --> BaseLanding: هبوط آمن عند القاعدة (HOME)
+    }
+
+    RETURNING_FOR_SWAP --> BATTERY_SWAPPING: وصول القاعدة وبدء عملية التبديل
+    
+    state BATTERY_SWAPPING {
+        [*] --> CountdownTimer: بدء مؤقت الاستبدال (120 ثانية)
+        CountdownTimer --> ProgressiveRecharge: شحن البطارية تدريجياً إلى 100%
+        ProgressiveRecharge --> BatterySwappedReady: اكتمال 120s
+    }
+
+    BATTERY_SWAPPING --> RELAUNCHING_SORTIE: إقلاع فوري واستئناف المهمة
+    
+    state RELAUNCHING_SORTIE {
+        [*] --> ClimbToAlt: الصعود للارتفاع الآمن
+        ClimbToAlt --> TransitToNextBreakpoint: التوجه لنقطة استئناف الجولة التالية
+    }
+
+    RELAUNCHING_SORTIE --> SORTIE_FLYING: الوصول لنقطة الاستئناف ومواصلة المسح
+
+    MISSION_COMPLETED --> READY: تصفير الجلسة أو انتظار أمر جديد
+    READY --> [*]: إيقاف التشغيل
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Activity / Data Flow Diagram -->
+  <div id="sec-activity" class="section-card">
+    <h2>5. مخطط تدفق العمليات الحسابية (Activity & Data Flow Diagram)</h2>
+    <p class="desc">يوضح تدفق البيانات من مضلع الإحداثيات الجغرافي الخام حتى صياغة جولات الطيران الفيزيائية وبثها.</p>
+    <div class="diagram-container">
+      <div class="mermaid">
+flowchart TD
+    Start(["إحداثيات المضلع الجغرافي (Lat/Lon)"]) --> Discretize["تثبيت دقة المسح: W_sensor ≈ 55m"]
+    Discretize --> Overpass["استدعاء Overpass API (OSM Road Network)"]
+    Overpass --> Cluster["استخراج عقد التقاطعات مع التجميع العنقودي (< 25m)"]
+    Cluster --> GridGen["توليد خلايا المسح الفضائي (Geodesic Grid 55m)"]
+    GridGen --> BufferMask["تطبيق عازل الإقصاء حول الطرق (Zero-Overlap R = 35m)"]
+    BufferMask --> UnifiedPool["حوض الأهداف الموحد (T = V_roads U C_grid_filtered)"]
+    
+    UnifiedPool --> ChromoInit["تمثيل الكروموسوم: تباديل الأهداف وفواصل الأسطول"]
+    ChromoInit --> EvalFitness["تقييم اللياقة الموجه متجهة الحساب (Vectorized Fitness)"]
+    
+    EvalFitness --> RL_Q["متحكم التعلم المعزز: ضبط معاملات (w, c1, c2, p_mut) ديناميكياً"]
+    RL_Q --> EvolLoop{"اكتمال الأجيال؟ (Gen >= 15)"}
+    EvolLoop -- لا --> Selection["انتخاب النخبة + تقاطع مكاني + طفرة سرب"]
+    Selection --> EvalFitness
+    EvolLoop -- نعم --> PostRefine["صقل الحل النهائي: 2-Opt وفك تقاطعات المسارات"]
+
+    PostRefine --> BreakpointDetect["فحص حدود طاقة البطارية (120 Wh / 35 min)"]
+    BreakpointDetect --> SortieCut{"هل يتجاوز المسار طاقة البطارية؟"}
+    SortieCut -- نعم --> InsertSwap["إدراج نقاط العودة والتبديل (SORTIE_RETURN_BASE) وإضافة 120s"]
+    SortieCut -- لا --> DirectMission["اعتماد المسار كجولة فردية"]
+    InsertSwap --> FinalPlan["تجهيز المسار متعدد الجولات النهائي"]
+    DirectMission --> FinalPlan
+
+    FinalPlan --> LaunchSim(["إطلاق المحاكاة الفيزيائية اللحظية وبث التيليميتري"])
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
