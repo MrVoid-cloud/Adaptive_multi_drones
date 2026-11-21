@@ -52,6 +52,8 @@ class HybridSpaceStatistics(BaseModel):
     buffer_radius_m: float
     zero_overlap_verified: bool = True
     source: str
+    total_physical_cells: int = 0
+    compressed_strips_count: int = 0
 
 
 class HybridGridGenerationResponse(BaseModel):

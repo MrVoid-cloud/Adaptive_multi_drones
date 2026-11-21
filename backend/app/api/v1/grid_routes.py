@@ -191,7 +191,9 @@ async def generate_hybrid_graph_grid(payload: HybridGridGenerationRequest):
         road_edges_count=len(road_network.edges),
         buffer_radius_m=round(hybrid_builder.buffer_radius_m, 1),
         zero_overlap_verified=True,
-        source=road_network.source
+        source=road_network.source,
+        total_physical_cells=hybrid_builder.total_physical_cells,
+        compressed_strips_count=hybrid_builder.compressed_strips_count
     )
 
     return HybridGridGenerationResponse(

@@ -7,7 +7,7 @@ export interface Waypoint {
   cell_id: number | string;
   target_id?: string;
   node_type?: 'ROAD_INTERSECTION' | 'OPEN_TERRAIN_CELL';
-  waypoint_type?: 'TARGET' | 'SORTIE_RETURN_BASE' | 'SORTIE_RELAUNCH_BASE' | string;
+  waypoint_type?: 'TARGET' | 'SORTIE_RETURN_BASE' | 'SORTIE_RELAUNCH_BASE' | 'TARGET_STRIP_ENTRY' | 'TARGET_STRIP_EXIT' | string;
   sortie_index?: number;
   row: number;
   col: number;
@@ -18,6 +18,12 @@ export interface Waypoint {
   priority: number;
   roughness: number;
   elevation_m?: number;
+  metadata?: Record<string, any>;
+  covered_cell_ids?: string[];
+  covered_cells_count?: number;
+  is_strip_entry?: boolean;
+  is_strip_exit?: boolean;
+  strip_id?: string;
 }
 
 export interface AlgorithmResult {
@@ -33,6 +39,10 @@ export interface AlgorithmResult {
   routes: Record<string, Waypoint[]>;
   total_sorties?: number;
   sorties_per_drone?: Record<string, number>;
+  total_physical_cells?: number;
+  covered_physical_cells?: number;
+  physical_coverage_pct?: number;
+  compressed_strips_count?: number;
   rl_adaptation_log?: Array<{
     generation: number;
     state: number;
@@ -100,6 +110,8 @@ export interface TriAlgorithmBenchmarkResponse {
   status: string;
   fleet_size: number;
   active_cells_count: number;
+  total_physical_cells?: number;
+  compressed_strips_count?: number;
   kpi_comparison: TriBenchmarkComparison;
   analytics_comparison?: RouteAnalyticsMatrix;
   pso_result: AlgorithmResult;

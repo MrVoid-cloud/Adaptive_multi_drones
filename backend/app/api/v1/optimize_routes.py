@@ -19,8 +19,8 @@ router = APIRouter(prefix="/optimize", tags=["Tri-Algorithm Optimization Engine"
 
 class OptimizationRequestSchema(BaseModel):
     mission_id: Optional[str] = Field(default=None, description="Active session epoch ID (UUID)")
-    iterations: int = Field(default=25, ge=5, le=150, description="Iterations / Generations per algorithm")
-    population_size: int = Field(default=25, ge=6, le=100, description="Swarm / Population size")
+    iterations: int = Field(default=18, ge=5, le=150, description="Iterations / Generations per algorithm")
+    population_size: int = Field(default=18, ge=6, le=100, description="Swarm / Population size")
     weights: Optional[Dict[str, float]] = None
     fleet_size: Optional[int] = Field(default=None, ge=1, le=8, description="Operator-defined UAV count")
 

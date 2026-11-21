@@ -111,19 +111,38 @@ class MultiDronePhysicsSimulator:
                 if wp_type in ("SORTIE_RETURN_BASE", "SORTIE_RELAUNCH_BASE") or is_base:
                     continue
 
-                t_id = str(wp.get("target_id", wp.get("cell_id", "")))
-                if t_id and t_id not in self.mission_targets_registry:
-                    self.mission_targets_registry[t_id] = {
-                        "target_id": t_id,
-                        "cell_id": t_id,
-                        "lat": float(wp["lat"]),
-                        "lon": float(wp["lon"]),
-                        "alt_m": float(wp.get("safe_alt_m", wp.get("alt_m", 60.0))),
-                        "elevation_m": float(wp.get("elevation_m", 0.0)),
-                        "row": wp.get("row", 0),
-                        "col": wp.get("col", 0),
-                        "node_type": wp.get("node_type", "OPEN_TERRAIN_CELL")
-                    }
+                meta = wp.get("metadata", {})
+                cov_ids = meta.get("covered_cell_ids") or wp.get("covered_cell_ids") or []
+
+                if cov_ids:
+                    for cid in cov_ids:
+                        cid_str = str(cid)
+                        if cid_str not in self.mission_targets_registry:
+                            self.mission_targets_registry[cid_str] = {
+                                "target_id": cid_str,
+                                "cell_id": cid_str,
+                                "lat": float(wp["lat"]),
+                                "lon": float(wp["lon"]),
+                                "alt_m": float(wp.get("safe_alt_m", wp.get("alt_m", 60.0))),
+                                "elevation_m": float(wp.get("elevation_m", 0.0)),
+                                "row": wp.get("row", 0),
+                                "col": wp.get("col", 0),
+                                "node_type": wp.get("node_type", "OPEN_TERRAIN_CELL")
+                            }
+                else:
+                    t_id = str(wp.get("target_id", wp.get("cell_id", "")))
+                    if t_id and t_id not in self.mission_targets_registry:
+                        self.mission_targets_registry[t_id] = {
+                            "target_id": t_id,
+                            "cell_id": t_id,
+                            "lat": float(wp["lat"]),
+                            "lon": float(wp["lon"]),
+                            "alt_m": float(wp.get("safe_alt_m", wp.get("alt_m", 60.0))),
+                            "elevation_m": float(wp.get("elevation_m", 0.0)),
+                            "row": wp.get("row", 0),
+                            "col": wp.get("col", 0),
+                            "node_type": wp.get("node_type", "OPEN_TERRAIN_CELL")
+                        }
 
         self.unsearched_target_ids = set(self.mission_targets_registry.keys())
         self.total_cells_to_scan = len(self.unsearched_target_ids)
@@ -348,27 +367,52 @@ class MultiDronePhysicsSimulator:
                         self.waypoint_indices[d_id] += 1
                         state["status"] = DroneStatus.SORTIE_FLYING
                     else:
-                        # Target waypoint arrived
+                        # Target waypoint arrived (TARGET, TARGET_STRIP_ENTRY, TARGET_STRIP_EXIT)
                         self.waypoint_indices[d_id] += 1
-                        target_id = str(target_wp.get("target_id", target_wp.get("cell_id", f"{d_id}_{idx}")))
+                        meta = target_wp.get("metadata", {})
+                        cov_ids = meta.get("covered_cell_ids") or target_wp.get("covered_cell_ids") or []
 
-                        if target_id not in self.scanned_target_ids:
-                            self.scanned_target_ids.add(target_id)
-                            self.unsearched_target_ids.discard(target_id)
-                            self.scanned_cells_count += 1
-                            newly_scanned_ids.append(target_id)
-
+                        if wp_type == "TARGET_STRIP_EXIT" or (wp_type != "TARGET_STRIP_ENTRY" and cov_ids):
+                            # Mark all physical cells along this strip as scanned
                             laser_dist = max(5.0, target_alt - float(target_wp.get("elevation_m", 0.0)) + float(np.random.normal(0, 0.15)))
                             est_elevation = LiDARTerrainProcessor.extract_elevation(target_alt, laser_dist)
+                            for cid in cov_ids:
+                                cid_str = str(cid)
+                                if cid_str not in self.scanned_target_ids:
+                                    self.scanned_target_ids.add(cid_str)
+                                    self.unsearched_target_ids.discard(cid_str)
+                                    self.scanned_cells_count += 1
+                                    newly_scanned_ids.append(cid_str)
+                                    newly_scanned_cells.append({
+                                        "cell_id": cid_str,
+                                        "drone_id": d_id,
+                                        "elevation_m": round(est_elevation, 2),
+                                        "row": target_wp.get("row", 0),
+                                        "col": target_wp.get("col", 0),
+                                        "node_type": target_wp.get("node_type", "OPEN_TERRAIN_CELL")
+                                    })
+                        elif wp_type == "TARGET_STRIP_ENTRY":
+                            state["status"] = DroneStatus.SEARCHING
+                        else:
+                            # Standard single waypoint (e.g. ROAD_INTERSECTION)
+                            target_id = str(target_wp.get("target_id", target_wp.get("cell_id", f"{d_id}_{idx}")))
+                            if target_id not in self.scanned_target_ids:
+                                self.scanned_target_ids.add(target_id)
+                                self.unsearched_target_ids.discard(target_id)
+                                self.scanned_cells_count += 1
+                                newly_scanned_ids.append(target_id)
 
-                            newly_scanned_cells.append({
-                                "cell_id": target_id,
-                                "drone_id": d_id,
-                                "elevation_m": round(est_elevation, 2),
-                                "row": target_wp.get("row", 0),
-                                "col": target_wp.get("col", 0),
-                                "node_type": target_wp.get("node_type", "OPEN_TERRAIN_CELL")
-                            })
+                                laser_dist = max(5.0, target_alt - float(target_wp.get("elevation_m", 0.0)) + float(np.random.normal(0, 0.15)))
+                                est_elevation = LiDARTerrainProcessor.extract_elevation(target_alt, laser_dist)
+
+                                newly_scanned_cells.append({
+                                    "cell_id": target_id,
+                                    "drone_id": d_id,
+                                    "elevation_m": round(est_elevation, 2),
+                                    "row": target_wp.get("row", 0),
+                                    "col": target_wp.get("col", 0),
+                                    "node_type": target_wp.get("node_type", "OPEN_TERRAIN_CELL")
+                                })
             else:
                 # Route completed for this drone
                 state["status"] = DroneStatus.MISSION_COMPLETED

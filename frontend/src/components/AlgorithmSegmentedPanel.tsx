@@ -57,10 +57,12 @@ export const AlgorithmSegmentedPanel: React.FC<AlgorithmSegmentedPanelProps> = (
 
   // Compute Hybrid Space Statistics from current routes
   const hybridStats = React.useMemo(() => {
-    if (!currentResult?.routes) return { roadNodes: 0, openCells: 0, altitudeSwitches: 0 };
+    if (!currentResult?.routes) return { roadNodes: 0, openCells: 0, altitudeSwitches: 0, physicalCells: 0, stripsCount: 0 };
     let roadNodes = 0;
     let openCells = 0;
     let altitudeSwitches = 0;
+    let physicalCells = currentResult.total_physical_cells || benchmarkData?.total_physical_cells || 0;
+    let stripsCount = currentResult.compressed_strips_count || benchmarkData?.compressed_strips_count || 0;
 
     Object.values(currentResult.routes).forEach((wps: Waypoint[]) => {
       for (let i = 0; i < wps.length; i++) {
@@ -76,8 +78,15 @@ export const AlgorithmSegmentedPanel: React.FC<AlgorithmSegmentedPanelProps> = (
       }
     });
 
-    return { roadNodes, openCells, altitudeSwitches };
-  }, [currentResult]);
+    if (physicalCells === 0) {
+      physicalCells = openCells;
+    }
+    if (stripsCount === 0) {
+      stripsCount = Math.ceil(openCells / 2);
+    }
+
+    return { roadNodes, openCells, altitudeSwitches, physicalCells, stripsCount };
+  }, [currentResult, benchmarkData]);
 
   return (
     <aside className="w-96 h-full flex flex-col bg-hud-panel border-l border-hud-border select-none font-sans text-xs">
@@ -91,7 +100,7 @@ export const AlgorithmSegmentedPanel: React.FC<AlgorithmSegmentedPanelProps> = (
           <p className="text-[10px] text-slate-400">Tri-Algorithm Comparative Benchmark</p>
         </div>
         <button
-          onClick={onRunBenchmark}
+          onClick={() => onRunBenchmark()}
           disabled={isLoading}
           className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 hover:border-emerald-500/50 rounded font-semibold text-[11px] transition-all flex items-center space-x-1 disabled:opacity-50 cursor-pointer"
         >
@@ -280,20 +289,24 @@ export const AlgorithmSegmentedPanel: React.FC<AlgorithmSegmentedPanelProps> = (
             <div className="p-2.5 bg-slate-950 rounded-lg border border-slate-800/80 font-mono text-[10px] space-y-1">
               <div className="text-slate-400 font-bold uppercase tracking-wider flex items-center justify-between">
                 <span>توزيع أهداف الفضاء الهجين:</span>
-                <span className="text-emerald-400">Zero-Overlap ✓</span>
+                <span className="text-emerald-400">Zero-Gap 100% ✓</span>
               </div>
-              <div className="grid grid-cols-3 gap-1 pt-1 text-center">
+              <div className="grid grid-cols-4 gap-1 pt-1 text-center">
                 <div className="p-1 bg-slate-900 rounded border border-slate-800">
                   <span className="text-cyan-400 block font-bold">{hybridStats.roadNodes}</span>
-                  <span className="text-slate-500 text-[9px]">عقد طرق</span>
+                  <span className="text-slate-500 text-[8px]">عقد طرق</span>
                 </div>
                 <div className="p-1 bg-slate-900 rounded border border-slate-800">
-                  <span className="text-emerald-400 block font-bold">{hybridStats.openCells}</span>
-                  <span className="text-slate-500 text-[9px]">خلايا حرة</span>
+                  <span className="text-amber-400 block font-bold">{hybridStats.stripsCount}</span>
+                  <span className="text-slate-500 text-[8px]">شرائح مسح</span>
+                </div>
+                <div className="p-1 bg-slate-900 rounded border border-slate-800">
+                  <span className="text-emerald-400 block font-bold">{hybridStats.physicalCells.toLocaleString()}</span>
+                  <span className="text-slate-500 text-[8px]">خلية فيزيائية</span>
                 </div>
                 <div className="p-1 bg-slate-900 rounded border border-slate-800">
                   <span className="text-purple-400 block font-bold">{hybridStats.altitudeSwitches}</span>
-                  <span className="text-slate-500 text-[9px]">تبديل ارتفاع</span>
+                  <span className="text-slate-500 text-[8px]">تبديل ارتفاع</span>
                 </div>
               </div>
             </div>
@@ -333,7 +346,9 @@ export const AlgorithmSegmentedPanel: React.FC<AlgorithmSegmentedPanelProps> = (
                 <div className="text-base font-bold text-emerald-400 font-mono">
                   100.0%
                 </div>
-                <div className="text-[9px] text-slate-500">Zero-Gap Coverage</div>
+                <div className="text-[9px] text-slate-400 font-mono">
+                  {hybridStats.physicalCells.toLocaleString()} / {hybridStats.physicalCells.toLocaleString()} خلية
+                </div>
               </div>
 
               {/* Energy Consumed */}

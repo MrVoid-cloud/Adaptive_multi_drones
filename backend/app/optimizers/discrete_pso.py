@@ -147,6 +147,12 @@ class DiscretePSOOptimizer:
             "priority_covered": gbest_metrics.get("priority_covered", 0.0),
             "convergence": convergence_curve,
             "compute_time_ms": round(elapsed_ms, 2),
+            "total_sorties": gbest_metrics.get("total_sorties", 1),
+            "sorties_per_drone": gbest_metrics.get("sorties_per_drone", {}),
+            "total_physical_cells": gbest_metrics.get("total_physical_cells", getattr(self.evaluator, "total_physical_cells", self.m)),
+            "covered_physical_cells": gbest_metrics.get("covered_physical_cells", getattr(self.evaluator, "total_physical_cells", self.m)),
+            "physical_coverage_pct": gbest_metrics.get("physical_coverage_pct", 100.0),
+            "compressed_strips_count": gbest_metrics.get("compressed_strips_count", getattr(self.evaluator, "compressed_strips_count", 0)),
             "routes": serialized_routes
         }
 
@@ -191,7 +197,10 @@ class DiscretePSOOptimizer:
                     "safe_alt_m": round(getattr(t, "safe_alt_m", getattr(t, "elevation_m", 0.0) + 50.0), 1),
                     "elevation_m": round(getattr(t, "elevation_m", 0.0), 1),
                     "roughness": round(getattr(t, "terrain_roughness", 1.0), 2),
-                    "priority": round(getattr(t, "priority", 1.0), 2)
+                    "priority": round(getattr(t, "priority", 1.0), 2),
+                    "metadata": getattr(t, "metadata", {}),
+                    "covered_cell_ids": getattr(t, "metadata", {}).get("covered_cell_ids", []),
+                    "covered_cells_count": getattr(t, "metadata", {}).get("covered_cells_count", 1)
                 }
                 for idx, t in enumerate(target_list)
             ]

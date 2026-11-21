@@ -239,14 +239,16 @@ class HybridGAPSOOptimizer:
         min_lon, max_lon = float(np.min(target_lons)), float(np.max(target_lons))
         cos_mean_lat = math.cos(math.radians((min_lat + max_lat) / 2.0))
 
-        # 1. Swarm & Population Initialization with Equal-Cardinality Polar Quantile Seeding
+        # 1. Swarm & Population Initialization with Geographic Longitude & Polar Quantile Seeding
         swarm = np.zeros((self.size, self.m), dtype=int)
         for i in range(self.size):
             if i == 0:
-                swarm[i] = self._generate_polar_quantile_seed(target_lats, target_lons, cos_mean_lat)
+                swarm[i] = self._generate_longitude_quantile_seed(target_lats, target_lons)
             elif i == 1:
-                swarm[i] = self._generate_angular_sector_seed(target_lats, target_lons, cos_mean_lat)
+                swarm[i] = self._generate_polar_quantile_seed(target_lats, target_lons, cos_mean_lat)
             elif i == 2:
+                swarm[i] = self._generate_angular_sector_seed(target_lats, target_lons, cos_mean_lat)
+            elif i == 3:
                 swarm[i] = self._generate_context_aware_voronoi_seed(target_lats, target_lons, cos_mean_lat)
             else:
                 swarm[i] = self.rng.randint(0, self.n_eff, size=self.m)
@@ -470,6 +472,10 @@ class HybridGAPSOOptimizer:
             "routes": serialized_routes,
             "total_sorties": gbest_metrics.get("total_sorties", 1),
             "sorties_per_drone": gbest_metrics.get("sorties_per_drone", {}),
+            "total_physical_cells": gbest_metrics.get("total_physical_cells", getattr(self.evaluator, "total_physical_cells", self.m)),
+            "covered_physical_cells": gbest_metrics.get("covered_physical_cells", getattr(self.evaluator, "total_physical_cells", self.m)),
+            "physical_coverage_pct": gbest_metrics.get("physical_coverage_pct", 100.0),
+            "compressed_strips_count": gbest_metrics.get("compressed_strips_count", getattr(self.evaluator, "compressed_strips_count", 0)),
             "rl_adaptation_log": self.rl_controller.history_log,
             "stage_breakdown": {
                 "ga_pso_evolution_time_ms": evo_ms,
@@ -479,6 +485,29 @@ class HybridGAPSOOptimizer:
                 "pso_refinement_time_ms": mem_ms
             }
         }
+
+    def _generate_longitude_quantile_seed(
+        self,
+        target_lats: np.ndarray,
+        target_lons: np.ndarray
+    ) -> np.ndarray:
+        """
+        Equal-Cardinality Longitude Quantile Seeding:
+        Partitions targets strictly from West to East into N_eff compact, non-overlapping sectors.
+        """
+        chromosome = np.zeros(self.m, dtype=int)
+        sorted_indices = np.argsort(target_lons)
+
+        chunk_size = self.m // self.n_eff
+        remainder = self.m % self.n_eff
+        cur_pos = 0
+
+        for d in range(self.n_eff):
+            take = chunk_size + (1 if d < remainder else 0)
+            chromosome[sorted_indices[cur_pos:cur_pos + take]] = d
+            cur_pos += take
+
+        return chromosome
 
     def _generate_polar_quantile_seed(
         self,
@@ -683,7 +712,10 @@ class HybridGAPSOOptimizer:
                     "safe_alt_m": round(getattr(t, "safe_alt_m", getattr(t, "elevation_m", 0.0) + 50.0), 1),
                     "elevation_m": round(getattr(t, "elevation_m", 0.0), 1),
                     "roughness": round(getattr(t, "terrain_roughness", 1.0), 2),
-                    "priority": round(getattr(t, "priority", 1.0), 2)
+                    "priority": round(getattr(t, "priority", 1.0), 2),
+                    "metadata": getattr(t, "metadata", {}),
+                    "covered_cell_ids": getattr(t, "metadata", {}).get("covered_cell_ids", []),
+                    "covered_cells_count": getattr(t, "metadata", {}).get("covered_cells_count", 1)
                 }
                 for idx, t in enumerate(target_list)
             ]
@@ -763,6 +795,8 @@ class TriAlgorithmOrchestrator:
             "fleet_size": self.evaluator.n_drones,
             "effective_fleet_size": self.evaluator.n_eff,
             "active_cells_count": self.evaluator.m_cells,
+            "total_physical_cells": getattr(self.evaluator, "total_physical_cells", self.evaluator.m_cells),
+            "compressed_strips_count": getattr(self.evaluator, "compressed_strips_count", 0),
             "kpi_comparison": {
                 "makespan_reduction_vs_pso_pct": time_improvement_vs_pso,
                 "makespan_reduction_vs_ga_pct": time_improvement_vs_ga,

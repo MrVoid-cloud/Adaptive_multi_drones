@@ -42,6 +42,7 @@ interface MultiLayerMissionMapProps {
   onROISubmitted?: (roi: any) => void;
   onROIStartDrawing?: () => void;
   onROICleared?: () => void;
+  onError?: (message: string) => void;
   isSolving?: boolean;
   scannedTargetIds?: Set<string | number>;
   homeBase?: { lat: number; lon: number } | null;
@@ -176,6 +177,7 @@ export const MultiLayerMissionMap = forwardRef<MultiLayerMissionMapRef, MultiLay
   onROISubmitted,
   onROIStartDrawing,
   onROICleared,
+  onError,
   isSolving = false,
   scannedTargetIds = new Set(),
   homeBase = null
@@ -985,12 +987,16 @@ export const MultiLayerMissionMap = forwardRef<MultiLayerMissionMapRef, MultiLay
           console.warn('Hybrid space generation failed with status:', hybridRes.status);
           const errBody = await hybridRes.json().catch(() => ({}));
           console.error('Server error detail:', errBody);
-          if (onROISubmitted) {
-            onROISubmitted(stats);
+          const detail = typeof errBody.detail === 'string' ? errBody.detail : `HTTP ${hybridRes.status}`;
+          if (onError) {
+            onError(`فشل توليد الفضاء الهجين للمنطقة (${detail})`);
           }
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Failed to submit ROI / hybrid generate:', err);
+        if (onError) {
+          onError(`خطأ في الاتصال بالخادم: ${err?.message || 'تعذر الوصول إلى مسار الفضاء الهجين'}`);
+        }
       } finally {
         setIsGenerating(false);
       }

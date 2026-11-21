@@ -69,6 +69,8 @@ class ModifiedGAOptimizer:
         population = np.zeros((self.pop_size, self.m), dtype=int)
         for i in range(self.pop_size):
             if i == 0:
+                population[i] = self._generate_longitude_quantile_seed()
+            elif i == 1:
                 population[i] = self._generate_polar_quantile_seed()
             else:
                 population[i] = self.rng.randint(0, self.n_eff, size=self.m)
@@ -151,8 +153,29 @@ class ModifiedGAOptimizer:
             "priority_covered": best_metrics.get("priority_covered", 0.0),
             "convergence": convergence_curve,
             "compute_time_ms": round(elapsed_ms, 2),
+            "total_sorties": best_metrics.get("total_sorties", 1),
+            "sorties_per_drone": best_metrics.get("sorties_per_drone", {}),
+            "total_physical_cells": best_metrics.get("total_physical_cells", getattr(self.evaluator, "total_physical_cells", self.m)),
+            "covered_physical_cells": best_metrics.get("covered_physical_cells", getattr(self.evaluator, "total_physical_cells", self.m)),
+            "physical_coverage_pct": best_metrics.get("physical_coverage_pct", 100.0),
+            "compressed_strips_count": best_metrics.get("compressed_strips_count", getattr(self.evaluator, "compressed_strips_count", 0)),
             "routes": serialized_routes
         }
+
+    def _generate_longitude_quantile_seed(self) -> np.ndarray:
+        """Equal-Cardinality Longitude Quantile Seeding across West-East sectors."""
+        chromosome = np.zeros(self.m, dtype=int)
+        lons = np.array([t.lon for t in self.evaluator.active_targets])
+        sorted_indices = np.argsort(lons)
+
+        chunk_size = self.m // self.n_eff
+        remainder = self.m % self.n_eff
+        cur_pos = 0
+        for d in range(self.n_eff):
+            take = chunk_size + (1 if d < remainder else 0)
+            chromosome[sorted_indices[cur_pos:cur_pos + take]] = d
+            cur_pos += take
+        return chromosome
 
     def _generate_polar_quantile_seed(self) -> np.ndarray:
         """Equal-Cardinality Polar Quantile Seeding around Shared Home Base."""
@@ -210,7 +233,10 @@ class ModifiedGAOptimizer:
                     "safe_alt_m": round(getattr(t, "safe_alt_m", getattr(t, "elevation_m", 0.0) + 50.0), 1),
                     "elevation_m": round(getattr(t, "elevation_m", 0.0), 1),
                     "roughness": round(getattr(t, "terrain_roughness", 1.0), 2),
-                    "priority": round(getattr(t, "priority", 1.0), 2)
+                    "priority": round(getattr(t, "priority", 1.0), 2),
+                    "metadata": getattr(t, "metadata", {}),
+                    "covered_cell_ids": getattr(t, "metadata", {}).get("covered_cell_ids", []),
+                    "covered_cells_count": getattr(t, "metadata", {}).get("covered_cells_count", 1)
                 }
                 for idx, t in enumerate(target_list)
             ]

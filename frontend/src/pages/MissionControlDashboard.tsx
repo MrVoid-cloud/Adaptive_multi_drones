@@ -92,8 +92,10 @@ export const MissionControlDashboard: React.FC = () => {
 
   // Trigger Benchmark with Session Epoch ID verification & safety timeout
   const runBenchmark = async (targetFleetSize?: number, targetMissionId?: string | null) => {
-    const size = targetFleetSize || fleetSize;
-    const mid = (targetMissionId !== undefined && targetMissionId !== null)
+    const size = (typeof targetFleetSize === 'number' && !isNaN(targetFleetSize) && targetFleetSize > 0)
+      ? targetFleetSize
+      : fleetSize;
+    const mid = (typeof targetMissionId === 'string' && targetMissionId.trim().length > 0)
       ? targetMissionId
       : currentMissionId;
     setIsSolving(true);
@@ -131,7 +133,8 @@ export const MissionControlDashboard: React.FC = () => {
         });
       } else {
         const errJson = await res.json().catch(() => ({}));
-        const errMsg = errJson.detail || `Benchmark optimization failed (HTTP ${res.status})`;
+        const detailStr = typeof errJson.detail === 'string' ? errJson.detail : (errJson.detail ? JSON.stringify(errJson.detail) : '');
+        const errMsg = detailStr ? `[HTTP ${res.status}] ${detailStr}` : `Benchmark optimization failed (HTTP ${res.status})`;
         console.error('Benchmark optimization failed:', errMsg);
         setLaunchNotification({
           type: 'ERROR',
@@ -466,6 +469,7 @@ export const MissionControlDashboard: React.FC = () => {
             onROIStartDrawing={handleROIStartDrawing}
             onROICleared={handleROICleared}
             onROISubmitted={handleROISubmitted}
+            onError={(msg) => setLaunchNotification({ type: 'ERROR', message: msg })}
             isSolving={isSolving}
             scannedTargetIds={scannedTargetIds}
             homeBase={homeBase}
@@ -478,7 +482,7 @@ export const MissionControlDashboard: React.FC = () => {
           activeTab={activeTab}
           onTabChange={setActiveTab}
           onLaunchSimulation={handleDeployAndLaunch}
-          onRunBenchmark={runBenchmark}
+          onRunBenchmark={() => runBenchmark()}
           isLoading={isSolving}
           isLaunching={isLaunching}
         />
